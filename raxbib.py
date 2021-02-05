@@ -56,40 +56,54 @@ def mcMove(game):
             if game.P[i][j].a == True: move, score = scoreMove(game, i, j, 'a', move, score)    
     return move
 
+def chooseColor():
+    diece = 6*random()
+    if (diece<3): return 'blue'
+    else: return 'red'
+
 class Display(Frame):
     def __init__(self):
         Frame.__init__(self)
         self = ui.head(self)
         self.background = ui.bg(self)
         self.pieces = {0: PhotoImage (file =  'coin1.png'),1: PhotoImage (file = 'pawnw.png'), 2: PhotoImage (file = 'knightw.png'), 3: PhotoImage (file = 'bishopw.png'),
-                      4: PhotoImage (file = 'rookw.png'), 5: PhotoImage (file = 'queenw.png'), 6: PhotoImage (file = 'kingw.png'), 7: PhotoImage(file = 'empty.png')}
+                      4: PhotoImage (file = 'rookw.png'), 5: PhotoImage (file = 'queenw.png'), 6: PhotoImage (file = 'kingw.png'), 'empty': PhotoImage(file = 'empty.png')}
         self.coins = {1: PhotoImage (file = 'coin1.png'), 2: PhotoImage (file = 'coin2.png'), 3: PhotoImage (file = 'boot.png'), 
                       4: PhotoImage (file = 'shield.png'), 5: PhotoImage (file = 'guns.png')}
+        self.arrow = {'red': PhotoImage(file = 'arrowr.png'), 'blue': PhotoImage(file = 'arrowl.png'), 'empty': PhotoImage(file = 'empty.png')}
         frame, number = ui.buildBoardDraw(self.background)
         arrow = ui.buildArrowButton(self)
         self.grid_cells = ui.gridCells(frame, number, arrow)
         ui.buildNewGameButton(self)
-        self.score_label, self.coins_blue, self.coins_red, self.next_blue, self.next_red = ui.buildPreview(self)
-        self.game = bib.Game()
-        ui.drawGridCellsButton(self)
+        self.score_label, self.coins_blue, self.coins_red, self.next_blue, self.next_red, self.arrow_blue, self.arrow_red = ui.buildPreview(self)
+        self.iniGame()
         self.mainloop()
 
+    def iniGame (self):
+        self.game = bib.Game()
+        self.user = chooseColor()
+        self.ai = bib.changePlayer(self.user)
+        ui.drawGridCellsButton(self)
+        if self.user == 'red': 
+            self.move = mcMove(self.game)
+            self.game.moveGame(self.move)
+            ui.drawGridCellsButton(self)    
+    
     def selectMove (self, x, y, d):
         self.move = bib.Move(x, y, d)
         self.game.moveGame(self.move)
-        if (self.game.max['blue'] == 6 or self.game.count['red']==0): ui.gameOver(self, 'blue')
+        if (self.game.max[self.user] == 6 or self.game.count[self.ai]==0): ui.gameOver(self, self.user)
         elif (self.game.cp == 0): ui.gameOver(self, 'yellow')
         else: 
             ui.drawGridCellsButton(self)
             self.move = mcMove(self.game)
             self.game.moveGame(self.move)
-            if (self.game.max['red'] == 6 or self.game.count['blue']==0): ui.gameOver(self, 'red')
+            if (self.game.max[self.ai] == 6 or self.game.count[self.user]==0): ui.gameOver(self, self.ai)
             elif (self.game.cp == 0): ui.gameOver(self, 'yellow')
             else: ui.drawGridCellsButton(self)
 
     def newGame(self):
-        self.game = bib.Game()
         self.score_label.configure(text = '')
         self.grid_cells = ui.grayButtons(self.grid_cells)
-        ui.drawGridCellsButton(self)
-              
+        self.iniGame()
+        
